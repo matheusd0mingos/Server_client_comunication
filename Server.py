@@ -31,8 +31,9 @@ class CustomTableModel(QtCore.QAbstractTableModel):
         self.input_Inicio = data[1].values
         self.input_Fim = data[2].values
         self.input_Atividade = data[3].values
+        self.input_Tempo=data[4].values
 
-        self.column_count = 4
+        self.column_count = 5
         self.row_count = len(self.input_Atividade)
 
     def rowCount(self, parent=QtCore.QModelIndex()):
@@ -46,7 +47,7 @@ class CustomTableModel(QtCore.QAbstractTableModel):
             return None
         if orientation == QtCore.Qt.Horizontal:
             
-            return ("Usuario", "Inicio", 'Fim', 'Atividade')[section]
+            return ("Usuario", "Inicio", 'Fim', 'Atividade', 'Tempo')[section]
         else:
             return "{}".format(section)
 
@@ -66,6 +67,9 @@ class CustomTableModel(QtCore.QAbstractTableModel):
             elif column==3:
                 return self.input_Atividade[row]
 
+            elif column==4:
+                return self.input_Tempo[row]
+
         elif role == QtCore.Qt.BackgroundRole:
             return QtGui.QColor(QtCore.Qt.white)
         elif role == QtCore.Qt.TextAlignmentRole:
@@ -79,20 +83,40 @@ class Ui_MainWindow(object):
         self.cond=True
         self.df=df
         
+        self.ativ=''
+
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(520, 398)
+        MainWindow.resize(600, 398)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+
+        self.labelUser=QtWidgets.QLabel(self.centralwidget)
+        self.labelUser.setGeometry(QtCore.QRect(135, 0, 150, 22))
+        self.labelUser.setText('Escolha o usuário:')
+
         self.Ring = QtWidgets.QComboBox(self.centralwidget)
-        self.Ring.setGeometry(QtCore.QRect(160, 20, 201, 22))
+        self.Ring.setGeometry(QtCore.QRect(135, 20, 150, 22))
         self.Ring.setObjectName("Ring")
         self.Ring.addItem('Todos os usuarios')
         for item in list(self.df.Usuario.unique()):
             self.Ring.addItem(item)
-        self.Ring.activated.connect(self.selecionar)
+        #self.Ring.activated.connect(self.selecionar)
+
+
+        self.labelAtiv=QtWidgets.QLabel(self.centralwidget)
+        self.labelAtiv.setGeometry(QtCore.QRect(290, 0, 150, 22))
+        self.labelAtiv.setText('Escolha a atividade:')
+        self.Ring1 = QtWidgets.QComboBox(self.centralwidget)
+        self.Ring1.setGeometry(QtCore.QRect(290,20, 150,22))
+        self.Ring1.setObjectName("Ring1")
+        self.Ring1.addItem('Todas as atividades')
+        for item in list(self.df.Atividade.unique()):
+            self.Ring1.addItem(item)
+        #self.Ring1.activated.connect(self.selecionaratividade)
+
 
         self.Tabela = QtWidgets.QTableView(self.centralwidget)
-        self.Tabela.setGeometry(QtCore.QRect(20, 60, 474, 301))
+        self.Tabela.setGeometry(QtCore.QRect(20, 60, 570, 301))
         self.Tabela.setObjectName("Tabela")
         self.Tabela.modelo=CustomTableModel(data)
         self.Tabela.setModel(self.Tabela.modelo)
@@ -103,10 +127,28 @@ class Ui_MainWindow(object):
         self.horizontal_header.setStretchLastSection(False)
 
 
-        self.Button = QtWidgets.QPushButton(self.centralwidget)
-        self.Button.setGeometry(QtCore.QRect(20, 20, 131, 23))
-        self.Button.setObjectName("Button")
-        self.Button.clicked.connect(self.clickme)
+
+        self.labelanda=QtWidgets.QLabel(self.centralwidget)
+        self.labelanda.setGeometry(QtCore.QRect(20, 0, 150, 22))
+        self.labelanda.setText('Status da atividade:')
+        self.Opcoes = QtWidgets.QComboBox(self.centralwidget)
+        self.Opcoes.setGeometry(QtCore.QRect(20,20, 110,22))
+        self.Opcoes.setObjectName("Andamento")
+        self.Opcoes.addItem('Tudo')
+        self.Opcoes.addItem('Em andamento')
+        self.Opcoes.addItem('Finalizada')
+        #self.Ring1.activated.connect(self.clickme)
+
+
+        self.Button_search = QtWidgets.QPushButton(self.centralwidget)
+        self.Button_search.setGeometry(QtCore.QRect(445, 20, 70, 23))
+        self.Button_search.setObjectName("Pesquisa")
+        self.Button_search.clicked.connect(self.pesquisa)
+
+
+        self.labelhoras=QtWidgets.QLabel(self.centralwidget)
+        self.labelhoras.setGeometry(QtCore.QRect(20, 362, 400, 23))
+        #self.labelhoras.setText('Horas Trabalhadas: '+str(self.ativ))
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -122,7 +164,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Users activities"))
-        self.Button.setText(_translate("MainWindow", "Tarefas em andamento?"))
+        self.Button_search.setText(_translate("MainWindow", "Pesquisar"))
 
     def read_data(self, df):
         # Read the CSV content
@@ -130,8 +172,9 @@ class Ui_MainWindow(object):
         Inicio=df.Inicio
         Fim=df.Fim
         Atividade=df.Atividade
+        Tempo=df.Tempo
 
-        return Usuarios, Inicio, Fim, Atividade
+        return Usuarios, Inicio, Fim, Atividade, Tempo
     def mod(self):
         global cond
         df=pd.read_csv('Base.csv')
@@ -143,37 +186,85 @@ class Ui_MainWindow(object):
         self.df=df
         return list(df.Usuario.unique())
 
-    def clickme(self):
-        self.cond=not(self.cond)
-        self.selecionar()
-           
-
-    def selecionar(self):
-
-        aux=str(self.Ring.currentText())
+    def pesquisa(self):
         df=pd.read_csv('Base.csv')
-        #print(aux)
-        if (self.cond==True) and (aux=='Todos os usuarios'):
-            df=df
+        usuario=str(self.Ring.currentText())
+        atividade=str(self.Ring1.currentText())
+        andamento=str(self.Opcoes.currentText())
+
+        if usuario=='Todos os usuarios':
+            if atividade=='Todas as atividades':
+                if andamento=='Tudo':
+                    df=df
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+                elif andamento=='Em andamento':
+                    df=df.loc[df.Fim=='Em andamento']
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+                else:
+                    df=df.loc[df.Fim!='Em andamento']
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+
+
+
+            else:
+                if andamento=='Tudo':
+                    df=df.loc[df.Atividade==atividade]
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+                elif andamento=='Em andamento':
+                    df=df.loc[(df.Fim=='Em andamento')&(df.Atividade==atividade)]
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+                else:
+                    df=df.loc[(df.Fim!='Em andamento')&(df.Atividade==atividade)]
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+
+
+        else:
+            if atividade=='Todas as atividades':
+                if andamento=='Tudo':
+                    df=df.loc[df.Usuario==usuario]
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+                elif andamento=='Em andamento':
+                    df=df.loc[(df.Fim=='Em andamento')&(df.Usuario==usuario)]
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+
+                else:
+                    df=df.loc[(df.Fim!='Em andamento')&(df.Usuario==usuario)]
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+
+
+            else:
+                if andamento=='Tudo':
+                    df=df.loc[(df.Atividade==atividade)&(df.Usuario==usuario)]
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+                elif andamento=='Em andamento':
+                    df=df.loc[(df.Fim=='Em andamento')&(df.Atividade==atividade)&(df.Usuario==usuario)]
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+                else:
+                    df=df.loc[(df.Fim!='Em andamento')&(df.Atividade==atividade)&(df.Usuario==usuario)]
+                    new=self.read_data(df)
+                    self.Tabela.setModel(CustomTableModel(new))
+
+        if atividade=='Todas as atividades':
+            self.ativ='Selecione uma atividade'
+        else:
+            self.ativ=str(df.loc[(df.Atividade==atividade)&(df.Fim!='Em andamento'), 'Tempo'].sum())
+            if self.ativ=='0':
+                self.ativ='Em andamento'
+        self.labelhoras.setText('Horas Trabalhadas: '+str(self.ativ))
+
             
-            new=self.read_data(df)
-            self.Tabela.setModel(CustomTableModel(new))
-        
-        elif (self.cond==False) and (aux=='Todos os usuarios'):
-            df=df.loc[df.Fim=='Em andamento']
-            
-            new=self.read_data(df)
-            self.Tabela.setModel(CustomTableModel(new))
-        
-        elif (self.cond==True) and (aux!='Todos os usuarios'):
-            df=df.loc[df.Usuario==aux]
-            new=self.read_data(df)
-            self.Tabela.setModel(CustomTableModel(new))
-        
-        elif (self.cond==False) and (aux!='Todos os usuarios'):
-            df=df.loc[(df.Usuario==aux)&(df.Fim=='Em andamento')]
-            new=self.read_data(df)
-            self.Tabela.setModel(CustomTableModel(new))
+
 
 class ServerThread(Thread):
     def __init__(self,window): 
@@ -187,9 +278,9 @@ class ServerThread(Thread):
         tcpServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
         tcpServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
         tcpServer.bind((TCP_IP, TCP_PORT)) 
-        threads = [] 
-        
+        threads = []
         tcpServer.listen(4) 
+
         while True:
             print("Multithreaded Python server : Waiting for connections from TCP clients...") 
             global conn
@@ -230,12 +321,22 @@ class ClientThread(Thread):
     def update_data(self):
         base=pd.read_csv('Base.csv')
         new_information=pd.DataFrame(dictio)
+        new_information.Tempo=datetime.datetime.now()-datetime.datetime.now()
         nome_new=((new_information.Usuario))
         #print(type(nome_new))
         #print(nome_new)
         #print(nome_new[0])
         nome_new=str(nome_new[0])
-        
+        if not(nome_new in list(base.Usuario.unique())):
+            self.window.Ring.addItem(nome_new)
+        if not(base.empty):
+            if nome_new in list(base.Usuario.unique()):
+                x=(datetime.datetime.now()-datetime.datetime.strptime(base.loc[((base.Usuario)==nome_new)&(base.Fim=='Em andamento'), 'Inicio'].item().split('.')[0], '%Y-%m-%d %H:%M:%S'))
+                base.loc[((base.Usuario)==nome_new)&(base.Fim=='Em andamento'), 'Tempo']=x
+                base.loc[(base.Usuario!=nome_new)&(base.Fim=='Em andamento'), 'Tempo']=datetime.datetime.now()-pd.to_datetime(base.loc[(base.Usuario!=nome_new)&(base.Fim=='Em andamento'), 'Inicio'])
+            else:
+                base.loc[(base.Usuario!=nome_new)&(base.Fim=='Em andamento'), 'Tempo']=datetime.datetime.now()-pd.to_datetime(base.loc[(base.Usuario!=nome_new)&(base.Fim=='Em andamento'), 'Inicio'])
+                    
         (base.loc[((base.Usuario)==nome_new)&(base.Fim=='Em andamento'), 'Fim'])=datetime.datetime.now()
         base=base.append(new_information, ignore_index=True)
         base.to_csv('Base.csv', index=False)    
@@ -243,6 +344,7 @@ class ClientThread(Thread):
 
 
 if __name__ == "__main__":
+
     import sys
     data=pd.read_csv('Base.csv')
     app = QtWidgets.QApplication(sys.argv)
@@ -251,7 +353,9 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow, data)
 
     serverThread=ServerThread(ui)
+
     serverThread.start()
+    #Time(ui).start()
 
     MainWindow.show()
     sys.exit(app.exec_())
