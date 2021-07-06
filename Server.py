@@ -322,13 +322,17 @@ class ClientThread(Thread):
         base=pd.read_csv('Base.csv')
         new_information=pd.DataFrame(dictio)
         new_information.Tempo=datetime.datetime.now()-datetime.datetime.now()
+        atividade_new=new_information.Atividade
         nome_new=((new_information.Usuario))
+        atividade_new=str(atividade_new[0])
         #print(type(nome_new))
         #print(nome_new)
         #print(nome_new[0])
         nome_new=str(nome_new[0])
         if not(nome_new in list(base.Usuario.unique())):
             self.window.Ring.addItem(nome_new)
+        if not(atividade_new in list(base.Atividade.unique())):
+            self.window.Ring1.addItem(atividade_new)
         if not(base.empty):
             if nome_new in list(base.Usuario.unique()):
                 x=(datetime.datetime.now()-datetime.datetime.strptime(base.loc[((base.Usuario)==nome_new)&(base.Fim=='Em andamento'), 'Inicio'].item().split('.')[0], '%Y-%m-%d %H:%M:%S'))
