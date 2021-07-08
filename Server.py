@@ -374,7 +374,6 @@ if __name__ == "__main__":
     serverThread=ServerThread(ui)
 
     serverThread.start()
-    #Time(ui).start()
 
     MainWindow.show()
     sys.exit(app.exec_())
