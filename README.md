@@ -9,4 +9,4 @@ Obs.: Um possível erro é se a base não estiver no diretório correto, uma pos
 
 Obs2.: Não apertar o botão sair da interface do usuário.
 
-Obs3: Após selecionar os filtros, aperte o botão "Pesquisar" para atualizar as informações da tela
+Obs3: Após selecionar os filtros, aperte o botão "Pesquisar" para atualizar as informações da tela.
