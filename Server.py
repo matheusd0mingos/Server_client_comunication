@@ -272,6 +272,7 @@ class ServerThread(Thread):
         self.window=window
 
     def run(self): 
+        #Insira o IP do host em TCP_IP
         TCP_IP = '25.64.19.191' 
         TCP_PORT = 80 
         BUFFER_SIZE = 20  
@@ -359,7 +360,6 @@ if __name__ == "__main__":
     serverThread=ServerThread(ui)
 
     serverThread.start()
-    #Time(ui).start()
 
     MainWindow.show()
     sys.exit(app.exec_())
