@@ -350,8 +350,10 @@ class ClientThread(Thread):
             self.window.Ring1.addItem(atividade_new)
         if not(base.empty):
             if nome_new in list(base.Usuario.unique()):
-                x=(datetime.datetime.now()-datetime.datetime.strptime(base.loc[((base.Usuario)==nome_new)&(base.Fim=='Em andamento'), 'Inicio'].item().split('.')[0], '%Y-%m-%d %H:%M:%S'))
-                base.loc[((base.Usuario)==nome_new)&(base.Fim=='Em andamento'), 'Tempo']=x
+                #x=(datetime.datetime.now()-datetime.datetime.strptime(base.loc[((base.Usuario)==nome_new)&(base.Fim=='Em andamento'), 'Inicio'].item().split('.')[0], '%Y-%m-%d %H:%M:%S'))
+                #base.loc[((base.Usuario)==nome_new)&(base.Fim=='Em andamento'), 'Tempo']=x
+                base.loc[(base.Usuario==nome_new)&(base.Fim=='Em andamento'), 'Tempo']=datetime.datetime.now()-pd.to_datetime(base.loc[(base.Usuario==nome_new)&(base.Fim=='Em andamento'), 'Inicio'])
+
                 base.loc[(base.Usuario!=nome_new)&(base.Fim=='Em andamento'), 'Tempo']=datetime.datetime.now()-pd.to_datetime(base.loc[(base.Usuario!=nome_new)&(base.Fim=='Em andamento'), 'Inicio'])
             else:
                 base.loc[(base.Usuario!=nome_new)&(base.Fim=='Em andamento'), 'Tempo']=datetime.datetime.now()-pd.to_datetime(base.loc[(base.Usuario!=nome_new)&(base.Fim=='Em andamento'), 'Inicio'])
