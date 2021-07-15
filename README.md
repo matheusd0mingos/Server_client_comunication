@@ -4,7 +4,8 @@ PEE 2021
 Grupo: Domingos, Felipe Fernandes, Guarinieri.
 
 1. Pacotes a instalar: pyqt5, pandas
-2. Para configurar a rede (colocar o novo ip):
+2. Para melhor uso, instalar Hamachi nas duas máquinas e rodar uma rede interna.
+3. Para configurar a rede (colocar o novo ip):
    -No programa User.py: (linha 96). A variável host deve receber uma string com o valor de IP do servidor.
    -No programa Server.py: (linha 290). A variável TCP_IP deve receber uma string com o valor de IP, também, do servidor.
    
