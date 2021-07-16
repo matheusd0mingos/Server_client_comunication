@@ -8,7 +8,7 @@ Grupo: Domingos, Felipe Fernandes, Guarinieri.
 
    -No programa User.py: (linha 96). A variável host deve receber uma string com o valor de IP do servidor.
    
-   -No programa Server.py: (linha 290). A variável TCP_IP deve receber uma string com o valor de IP, também, do servidor.
+   -No programa Server.py: (linha 300). A variável TCP_IP deve receber uma string com o valor de IP, também, do servidor.
    
 3. Antes de iniciar o User.py, inicie o Server.py
 4. Desative Firewalls e antivírus
