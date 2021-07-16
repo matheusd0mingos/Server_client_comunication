@@ -339,6 +339,7 @@ class ClientThread(Thread):
             self.update_data()
             #print(self.window.Tabela.modelo)
             n=self.window.mod()
+            self.window.pesquisa()
             #print(widget.model)
             #self.window.Tabela.setModel(self.window.Tabela.modelo)
            
