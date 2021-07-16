@@ -8,6 +8,7 @@ import socket
 from threading import Thread 
 from socketserver import ThreadingMixIn 
 import datetime
+import time
 
 
 class CustomTableModel(QtCore.QAbstractTableModel):
@@ -75,7 +76,7 @@ class Ui_MainWindow(object):
         self.ativ=''
 
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(600, 402)
+        MainWindow.resize(700, 402)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
@@ -105,14 +106,14 @@ class Ui_MainWindow(object):
 
 
         self.Tabela = QtWidgets.QTableView(self.centralwidget)
-        self.Tabela.setGeometry(QtCore.QRect(20, 60, 570, 301))
+        self.Tabela.setGeometry(QtCore.QRect(20, 60, 650, 301))
         self.Tabela.setObjectName("Tabela")
         self.Tabela.modelo=CustomTableModel(data)
         self.Tabela.setModel(self.Tabela.modelo)
         self.horizontal_header = self.Tabela.horizontalHeader()
         self.vertical_header = self.Tabela.verticalHeader()
-        self.horizontal_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        self.vertical_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.horizontal_header.setSectionResizeMode(QtWidgets.QHeaderView.Interactive)
+        self.vertical_header.setSectionResizeMode(QtWidgets.QHeaderView.Interactive)
         self.horizontal_header.setStretchLastSection(False)
 
 
@@ -153,7 +154,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Users activities"))
-        self.Button_search.setText(_translate("MainWindow", "Pesquisar"))
+        self.Button_search.setText(_translate("MainWindow", "Filtrar"))
 
     def read_data(self, df):
         # Read the CSV content
@@ -243,9 +244,11 @@ class Ui_MainWindow(object):
                     df=df.loc[(df.Fim!='Em andamento')&(df.Atividade==atividade)&(df.Usuario==usuario)]
                     new=self.read_data(df)
                     self.Tabela.setModel(CustomTableModel(new))
+        self.df=df
 
         if atividade=='Todas as atividades':
             self.ativ='Selecione uma atividade'
+            self.labelhoras.setText('')
         else:
             if usuario=='Todos os usuarios':
                 #self.ativ=df.loc[(df.Atividade==atividade)&(df.Fim!='Em andamento'), 'Tempo']
@@ -258,7 +261,7 @@ class Ui_MainWindow(object):
 
                 #print(self.ativ)
                 #print(type(self.ativ))
-                if self.ativ=='0':
+                if self.ativ==pd.to_timedelta('0'):
                     self.ativ='Em andamento'
                 self.labelhoras.setText('Horas Trabalhadas: '+str(self.ativ)+'. Para mais detalhes, escolha um usuário')
             else:
@@ -272,11 +275,18 @@ class Ui_MainWindow(object):
 
                 #print(self.ativ)
                 #print(type(self.ativ))
-                if self.ativ=='0':
+                if self.ativ==pd.to_timedelta('0'):
                     self.ativ='Em andamento'
                 self.labelhoras.setText('Horas Trabalhadas de '+str(usuario)+' na tarefa '+str(atividade)+': '+str(self.ativ))
-
-
+    
+    def update_time(self):
+        base=self.df
+        for i in range(base.shape[0]):
+            x=datetime.datetime.now()-pd.to_datetime(base[i:i+1].loc[(base.Fim=='Em andamento'), 'Inicio'])
+            base[i:i+1].loc[base.Fim=='Em andamento', 'Tempo'] = str(x)[4:25]
+    
+        new=self.read_data(base)
+        self.Tabela.setModel(CustomTableModel(new))
             
 
 
@@ -287,7 +297,7 @@ class ServerThread(Thread):
 
     def run(self): 
         #Insira o Ip do Host em TCP_IP
-        TCP_IP = '25.64.19.191' 
+        TCP_IP = '192.168.43.135' 
         TCP_PORT = 80 
         BUFFER_SIZE = 20  
         tcpServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -362,6 +372,17 @@ class ClientThread(Thread):
         base=base.append(new_information, ignore_index=True)
         base.to_csv('Base.csv', index=False)    
 
+class relogio(Thread):
+    def __init__(self, window):
+        Thread.__init__(self) 
+
+        self.window=window
+
+    def run(self):
+        while True:
+            time.sleep(1)
+
+            self.window.update_time()
 
 
 if __name__ == "__main__":
@@ -374,6 +395,8 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow, data)
 
     serverThread=ServerThread(ui)
+    timeThread=relogio(ui)
+    timeThread.start()
 
     serverThread.start()
 
