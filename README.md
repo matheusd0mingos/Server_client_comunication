@@ -2,6 +2,7 @@
 PEE 2021    
 
 Programa de comunicação Server-Client, sistema de monitoramento de tarefas utilizando arquivos csv e pandas.
+
 Grupo: Domingos, Felipe Fernandes, Guarinieri.
 
 1. Pacotes a instalar: pyqt5, pandas
